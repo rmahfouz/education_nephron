@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NephronLab - Interactive Tubule Simulator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            overflow: hidden;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+        canvas {
+            touch-action: none;
+            cursor: crosshair;
+        }
+        .active-tool {
+            border: 2px solid #38bdf8;
+            background-color: #1e293b;
+        }
+        .canvas-container {
+            position: relative;
+            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 22px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #334155;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider { background-color: #ef4444; }
+        input:checked + .slider:before { transform: translateX(22px); }
+    </style>
+</head>
+<body class="flex flex-col h-screen">
+
+    <header class="bg-slate-900 border-b border-slate-700 p-4 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <div class="bg-blue-500 p-2 rounded-lg text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path><path d="M9 12H4s.55-3.03 2-5c1.62-2.2 5-3 5-3"></path></svg>
+            </div>
+            <h1 class="text-xl font-bold tracking-tight">NephronLab <span class="text-blue-400 font-normal text-sm ml-2">v2.6 Travel Distance</span></h1>
+        </div>
+        <div class="flex gap-4">
+            <button id="copyCodeBtn" class="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-md text-sm transition-all flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg>
+                Copy Code
+            </button>
+            <button id="clearBtn" class="bg-red-900/40 hover:bg-red-800 text-red-200 px-4 py-2 rounded-md text-sm transition-all">Clear All</button>
+        </div>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden">
+        <aside class="w-80 bg-slate-900 border-r border-slate-700 p-4 flex flex-col gap-6 overflow-y-auto">
+            
+            <div class="space-y-3">
+                <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-widest">Global Controls</h2>
+                <div class="bg-red-500/10 border border-red-500/20 p-3 rounded-lg flex items-center justify-between">
+                    <div>
+                        <span class="text-sm font-bold text-red-400">DESIGN MODE</span>
+                        <p class="text-[10px] text-slate-500">Flip flow direction</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="designToggle">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div>
+                <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">Transporters</h2>
+                <div class="grid grid-cols-2 gap-2">
+                    <button class="tool-btn active-tool p-2 rounded-lg text-left flex items-center gap-2 transition-all text-[11px]" data-tool="sodium">
+                        <div class="w-3 h-3 rounded-full bg-yellow-400"></div> Na+
+                    </button>
+                    <button class="tool-btn p-2 rounded-lg text-left flex items-center gap-2 transition-all text-[11px]" data-tool="potassium">
+                        <div class="w-3 h-3 rounded-full bg-red-400"></div> K+
+                    </button>
+                    <button class="tool-btn p-2 rounded-lg text-left flex items-center gap-2 transition-all text-[11px]" data-tool="chloride">
+                        <div class="w-3 h-3 rounded-full bg-green-400"></div> Cl-
+                    </button>
+                    <button class="tool-btn p-2 rounded-lg text-left flex items-center gap-2 transition-all text-[11px]" data-tool="water">
+                        <div class="w-3 h-3 rounded-full bg-blue-400"></div> H2O
+                    </button>
+                    <button class="tool-btn col-span-2 p-2 rounded-lg text-left flex items-center gap-3 transition-all text-sm" data-tool="na_k_pump">
+                        <div class="flex -space-x-1">
+                            <div class="w-3 h-3 rounded-full bg-yellow-400 border border-slate-900"></div>
+                            <div class="w-3 h-3 rounded-full bg-red-400 border border-slate-900"></div>
+                        </div> 
+                        Na/K Pump (3:2)
+                    </button>
+                    <button class="tool-btn col-span-2 p-2 rounded-lg text-left flex items-center gap-3 transition-all text-sm" data-tool="sglt">
+                        <div class="flex -space-x-1">
+                            <div class="w-3 h-3 rounded-full bg-yellow-400 border border-slate-900"></div>
+                            <div class="w-3 h-3 rounded-full bg-white border border-slate-900"></div>
+                        </div> 
+                        Na/Glucose Symport
+                    </button>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">Flux Density</h2>
+                    <input type="range" id="freqRange" min="5" max="150" step="5" value="80" class="w-full">
+                </div>
+                <div>
+                    <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">Simulation Speed</h2>
+                    <input type="range" id="speedRange" min="0.1" max="5.0" step="0.1" value="1.0" class="w-full">
+                </div>
+                <div>
+                    <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">Travel Distance (Span)</h2>
+                    <input type="range" id="spanRange" min="100" max="1000" step="10" value="450" class="w-full">
+                </div>
+                <div>
+                    <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">Channel Gap Width</h2>
+                    <input type="range" id="widthRange" min="10" max="250" step="2" value="80" class="w-full">
+                </div>
+                <div>
+                    <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">Particle Size</h2>
+                    <input type="range" id="sizeRange" min="8" max="24" step="1" value="12" class="w-full">
+                </div>
+                <button class="tool-btn w-full p-2 rounded-lg text-left flex items-center justify-center gap-3 transition-all text-sm border border-dashed border-slate-600" data-tool="eraser">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"></path><path d="m22 21-5-5"></path><path d="m5 11 9 9"></path></svg> Eraser
+                </button>
+            </div>
+        </aside>
+
+        <main class="flex-1 canvas-container flex flex-col">
+            <div class="absolute top-4 left-0 w-full flex justify-around pointer-events-none z-10 px-8">
+                <div class="w-1/4 text-center">
+                    <span class="text-blue-400 font-bold text-xl uppercase tracking-widest opacity-40">Lumen</span>
+                </div>
+                <div class="w-1/2 text-center">
+                    <span class="text-slate-100 font-bold text-xl uppercase tracking-widest opacity-40">Tubule Cell</span>
+                </div>
+                <div class="w-1/4 text-center">
+                    <span class="text-red-400 font-bold text-xl uppercase tracking-widest opacity-40">Blood</span>
+                </div>
+            </div>
+            <canvas id="mainCanvas" class="w-full h-full"></canvas>
+        </main>
+    </div>
+
+    <div id="toast" class="fixed bottom-6 right-6 bg-blue-600 text-white px-6 py-3 rounded-lg shadow-xl translate-y-20 opacity-0 transition-all duration-300">
+        Code copied!
+    </div>
+
+    <script>
+        const canvas = document.getElementById('mainCanvas');
+        const ctx = canvas.getContext('2d');
+        const toolBtns = document.querySelectorAll('.tool-btn');
+        const clearBtn = document.getElementById('clearBtn');
+        const designToggle = document.getElementById('designToggle');
+        const speedRange = document.getElementById('speedRange');
+        const sizeRange = document.getElementById('sizeRange');
+        const widthRange = document.getElementById('widthRange');
+        const freqRange = document.getElementById('freqRange');
+        const spanRange = document.getElementById('spanRange');
+        const copyCodeBtn = document.getElementById('copyCodeBtn');
+        const toast = document.getElementById('toast');
+
+        let width, height;
+        let isDrawing = false;
+        let currentTool = 'sodium';
+        let designMode = false;
+        let channels = [];
+        let particles = [];
+
+        const DATA = {
+            sodium: { color: '#facc15', label: 'Na+', textColor: '#422006' },
+            potassium: { color: '#f87171', label: 'K+', textColor: '#450a0a' },
+            chloride: { color: '#4ade80', label: 'Cl-', textColor: '#064e3b' },
+            water: { color: '#60a5fa', label: 'H2O', textColor: '#1e3a8a' },
+            glucose: { color: '#ffffff', label: 'G', textColor: '#0f172a' }
+        };
+
+        const CHANNEL_CONFIG = {
+            sodium: { groupA: {type: 'sodium', count: 1, gap: 1, y: 0, m: 1}, label: 'Na+' },
+            potassium: { groupA: {type: 'potassium', count: 1, gap: 1, y: 0, m: 1}, label: 'K+' },
+            chloride: { groupA: {type: 'chloride', count: 1, gap: 1, y: 0, m: 1}, label: 'Cl-' },
+            water: { groupA: {type: 'water', count: 1, gap: 1, y: 0, m: 1}, label: 'H2O' },
+            na_k_pump: { 
+                groupA: {type: 'sodium', count: 3, gap: 2, y: -0.3, m: 1}, 
+                groupB: {type: 'potassium', count: 2, gap: 2, y: 0.3, m: -1},
+                label: 'Na/K Pump' 
+            },
+            sglt: {
+                groupA: {type: 'sodium', count: 2, gap: 2, y: -0.25, m: 1}, 
+                groupB: {type: 'glucose', count: 1, gap: 2, y: 0.25, m: 1},
+                label: 'SGLT'
+            }
+        };
+
+        const MEMBRANE_L = 0.25; 
+        const MEMBRANE_R = 0.75;
+
+        function resize() {
+            width = canvas.width = canvas.offsetWidth;
+            height = canvas.height = canvas.offsetHeight;
+        }
+
+        class FluxParticle {
+            constructor(channel, type, direction, yOffsetScale, progressOffset, sharedSpeed, span) {
+                this.type = type;
+                this.parentX = channel.x;
+                this.channelId = channel.id;
+                this.yOffsetScale = yOffsetScale; 
+                this.dir = direction; 
+                this.progress = progressOffset; 
+                this.speed = sharedSpeed;
+                this.span = span; // Fixed span at creation for smooth movement
+            }
+
+            update() {
+                this.progress += this.speed;
+                return this.progress >= 1; 
+            }
+
+            draw() {
+                if (this.progress < 0) return; 
+                
+                const channel = channels.find(c => c.id === this.channelId);
+                if (!channel) return;
+
+                const info = DATA[this.type];
+                const radius = parseInt(sizeRange.value);
+                const gap = parseInt(widthRange.value);
+                const currentY = channel.y + (this.yOffsetScale * gap);
+                
+                const startX = this.parentX - (this.dir * this.span / 2);
+                const currentX = startX + (this.dir * this.span * this.progress);
+                
+                let alpha = 1;
+                if (this.progress < 0.1) alpha = this.progress / 0.1;
+                else if (this.progress > 0.9) alpha = (1 - this.progress) / 0.1;
+
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, alpha);
+                ctx.beginPath();
+                ctx.arc(currentX, currentY, radius, 0, Math.PI * 2);
+                ctx.fillStyle = info.color;
+                ctx.fill();
+
+                ctx.fillStyle = info.textColor;
+                ctx.font = `bold ${Math.max(6, radius * 0.75)}px Inter`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(info.label, currentX, currentY);
+                ctx.restore();
+            }
+        }
+
+        function drawMembrane() {
+            ctx.fillStyle = '#1e3a8a08';
+            ctx.fillRect(0, 0, width * MEMBRANE_L, height);
+            ctx.fillStyle = '#7f1d1d08';
+            ctx.fillRect(width * MEMBRANE_R, 0, width * (1-MEMBRANE_R), height);
+
+            ctx.strokeStyle = '#334155';
+            ctx.lineWidth = 1.5;
+            ctx.setLineDash([8, 8]);
+            [MEMBRANE_L, MEMBRANE_R].forEach(m => {
+                ctx.beginPath(); ctx.moveTo(width * m, 0); ctx.lineTo(width * m, height); ctx.stroke();
+            });
+            ctx.setLineDash([]);
+        }
+
+        function drawChannels() {
+            const time = Date.now() * 0.005;
+            const gap = parseInt(widthRange.value);
+            const radius = parseInt(sizeRange.value);
+            const span = parseInt(spanRange.value);
+            
+            const baseSimSpeed = 0.0018 * parseFloat(speedRange.value);
+            const fluxDensity = parseInt(freqRange.value);
+
+            // diameter in progress units. recalculated dynamically based on span.
+            const pBuffer = (2.25 * radius) / span;
+
+            channels.forEach(ch => {
+                const cx = ch.x;
+                const cy = ch.y;
+                const config = CHANNEL_CONFIG[ch.type];
+                
+                if (designMode) {
+                    ctx.strokeStyle = '#ef4444';
+                    ctx.setLineDash([2, 2]);
+                    ctx.strokeRect(cx - 55, cy - (gap/2 + 25), 110, gap + 50);
+                    ctx.setLineDash([]);
+                    ctx.fillStyle = '#ef4444';
+                    const arrowX = cx + (Math.sin(time * 0.5) * 5) + (ch.direction * 75);
+                    ctx.beginPath();
+                    ctx.moveTo(arrowX, cy);
+                    ctx.lineTo(arrowX - (ch.direction * 10), cy - 6);
+                    ctx.lineTo(arrowX - (ch.direction * 10), cy + 6);
+                    ctx.fill();
+                }
+
+                ctx.fillStyle = '#475569';
+                ctx.strokeStyle = '#ffffff33';
+                ctx.lineWidth = 1;
+                const barWidth = 90;
+                const barHeight = 8; 
+
+                ctx.beginPath();
+                ctx.roundRect(cx - barWidth/2, cy - gap/2 - barHeight, barWidth, barHeight, 4);
+                ctx.fill(); ctx.stroke();
+                ctx.beginPath();
+                ctx.roundRect(cx - barWidth/2, cy + gap/2, barWidth, barHeight, 4);
+                ctx.fill(); ctx.stroke();
+
+                if (!ch.lastSpawnTime) ch.lastSpawnTime = 0;
+                
+                const msPerPulse = (18000 / fluxDensity) / (parseFloat(speedRange.value) * 0.5);
+
+                if (Date.now() > ch.lastSpawnTime + msPerPulse) {
+                    ch.lastSpawnTime = Date.now();
+                    
+                    const spawnGroup = (group) => {
+                        if (!group) return;
+                        for (let i = 0; i < group.count; i++) {
+                            particles.push(new FluxParticle(
+                                ch, 
+                                group.type, 
+                                ch.direction * group.m, 
+                                group.y, 
+                                -(i * pBuffer),
+                                baseSimSpeed,
+                                span
+                            ));
+                        }
+                    };
+
+                    spawnGroup(config.groupA);
+                    spawnGroup(config.groupB);
+                }
+            });
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            drawMembrane();
+            drawChannels();
+            particles = particles.filter(p => !p.update());
+            particles.forEach(p => p.draw());
+            requestAnimationFrame(animate);
+        }
+
+        canvas.addEventListener('mousedown', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            if (designMode) {
+                const gap = parseInt(widthRange.value);
+                const clickedIdx = channels.findIndex(ch => Math.abs(ch.x - x) < 55 && Math.abs(ch.y - y) < (gap/2 + 35));
+                if (clickedIdx !== -1) {
+                    channels[clickedIdx].direction *= -1;
+                    return;
+                }
+            }
+
+            const mLAbs = width * MEMBRANE_L;
+            const mRAbs = width * MEMBRANE_R;
+            let targetX = null;
+            if (Math.abs(x - mLAbs) < 100) targetX = mLAbs;
+            else if (Math.abs(x - mRAbs) < 100) targetX = mRAbs;
+
+            if (targetX !== null) {
+                if (currentTool === 'eraser') {
+                    channels = channels.filter(ch => !(Math.abs(ch.x - targetX) < 50 && Math.abs(ch.y - y) < 80));
+                } else if(CHANNEL_CONFIG[currentTool]) {
+                    if (!channels.some(ch => Math.abs(ch.x - targetX) < 10 && Math.abs(ch.y - y) < 120)) {
+                        channels.push({ 
+                            id: Date.now(), 
+                            x: targetX, 
+                            y, 
+                            type: currentTool, 
+                            direction: 1, 
+                            lastSpawnTime: 0 
+                        });
+                    }
+                }
+            }
+        });
+
+        toolBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                toolBtns.forEach(b => b.classList.remove('active-tool'));
+                btn.classList.add('active-tool');
+                currentTool = btn.dataset.tool;
+            });
+        });
+
+        designToggle.addEventListener('change', (e) => designMode = e.target.checked);
+        clearBtn.addEventListener('click', () => { channels = []; particles = []; });
+
+        copyCodeBtn.addEventListener('click', () => {
+            const code = document.documentElement.outerHTML;
+            const textarea = document.createElement('textarea');
+            textarea.value = code;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 2000);
+        });
+
+        window.addEventListener('resize', resize);
+        resize();
+        animate();
+    </script>
+</body>
+</html>
