@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,33 +13,47 @@
             overflow: hidden;
             font-family: 'Inter', system-ui, -apple-system, sans-serif;
         }
+
         canvas {
             touch-action: none;
             cursor: crosshair;
         }
+
         .active-tool {
             border: 2px solid #38bdf8;
             background-color: #1e293b;
         }
+
         .canvas-container {
             position: relative;
             background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
         }
+
         .switch {
             position: relative;
             display: inline-block;
             width: 44px;
             height: 22px;
         }
-        .switch input { opacity: 0; width: 0; height: 0; }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
         .slider {
             position: absolute;
             cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             background-color: #334155;
             transition: .4s;
             border-radius: 34px;
         }
+
         .slider:before {
             position: absolute;
             content: "";
@@ -50,31 +65,76 @@
             transition: .4s;
             border-radius: 50%;
         }
-        input:checked + .slider { background-color: #ef4444; }
-        input:checked + .slider:before { transform: translateX(22px); }
+
+        input:checked+.slider {
+            background-color: #ef4444;
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(22px);
+        }
     </style>
 </head>
+
 <body class="flex flex-col h-screen">
 
     <header class="bg-slate-900 border-b border-slate-700 p-4 flex justify-between items-center">
         <div class="flex items-center gap-3">
             <div class="bg-blue-500 p-2 rounded-lg text-white">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path><path d="M9 12H4s.55-3.03 2-5c1.62-2.2 5-3 5-3"></path></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z">
+                    </path>
+                    <path
+                        d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z">
+                    </path>
+                    <path d="M9 12H4s.55-3.03 2-5c1.62-2.2 5-3 5-3"></path>
+                </svg>
             </div>
-            <h1 class="text-xl font-bold tracking-tight">NephronLab <span class="text-blue-400 font-normal text-sm ml-2">v2.6 Travel Distance</span></h1>
+            <h1 class="text-xl font-bold tracking-tight">NephronLab <span
+                    class="text-blue-400 font-normal text-sm ml-2">v2.6 Travel Distance</span></h1>
         </div>
         <div class="flex gap-4">
-            <button id="copyCodeBtn" class="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-md text-sm transition-all flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg>
+            <button id="saveBtn"
+                class="bg-blue-600 hover:bg-blue-500 px-3 py-2 rounded-md text-sm transition-all flex items-center gap-2">
+                <!-- Save Icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                    <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                    <polyline points="7 3 7 8 15 8"></polyline>
+                </svg>
+                Save
+            </button>
+            <button id="loadBtn"
+                class="bg-emerald-600 hover:bg-emerald-500 px-3 py-2 rounded-md text-sm transition-all flex items-center gap-2">
+                <!-- Load Icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                Load
+            </button>
+            <button id="copyCodeBtn"
+                class="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-md text-sm transition-all flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect>
+                    <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>
+                </svg>
                 Copy Code
             </button>
-            <button id="clearBtn" class="bg-red-900/40 hover:bg-red-800 text-red-200 px-4 py-2 rounded-md text-sm transition-all">Clear All</button>
+            <button id="clearBtn"
+                class="bg-red-900/40 hover:bg-red-800 text-red-200 px-4 py-2 rounded-md text-sm transition-all">Clear
+                All</button>
         </div>
     </header>
 
     <div class="flex flex-1 overflow-hidden">
         <aside class="w-80 bg-slate-900 border-r border-slate-700 p-4 flex flex-col gap-6 overflow-y-auto">
-            
+
             <div class="space-y-3">
                 <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-widest">Global Controls</h2>
                 <div class="bg-red-500/10 border border-red-500/20 p-3 rounded-lg flex items-center justify-between">
@@ -90,33 +150,26 @@
             </div>
 
             <div>
-                <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">Transporters</h2>
-                <div class="grid grid-cols-2 gap-2">
-                    <button class="tool-btn active-tool p-2 rounded-lg text-left flex items-center gap-2 transition-all text-[11px]" data-tool="sodium">
-                        <div class="w-3 h-3 rounded-full bg-yellow-400"></div> Na+
+                <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">Tools</h2>
+                <div class="space-y-2">
+                    <button id="addChannelBtn"
+                        class="w-full bg-blue-600 hover:bg-blue-500 text-white p-3 rounded-lg flex items-center justify-center gap-2 transition-all font-medium text-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        Add New Channel
                     </button>
-                    <button class="tool-btn p-2 rounded-lg text-left flex items-center gap-2 transition-all text-[11px]" data-tool="potassium">
-                        <div class="w-3 h-3 rounded-full bg-red-400"></div> K+
-                    </button>
-                    <button class="tool-btn p-2 rounded-lg text-left flex items-center gap-2 transition-all text-[11px]" data-tool="chloride">
-                        <div class="w-3 h-3 rounded-full bg-green-400"></div> Cl-
-                    </button>
-                    <button class="tool-btn p-2 rounded-lg text-left flex items-center gap-2 transition-all text-[11px]" data-tool="water">
-                        <div class="w-3 h-3 rounded-full bg-blue-400"></div> H2O
-                    </button>
-                    <button class="tool-btn col-span-2 p-2 rounded-lg text-left flex items-center gap-3 transition-all text-sm" data-tool="na_k_pump">
-                        <div class="flex -space-x-1">
-                            <div class="w-3 h-3 rounded-full bg-yellow-400 border border-slate-900"></div>
-                            <div class="w-3 h-3 rounded-full bg-red-400 border border-slate-900"></div>
-                        </div> 
-                        Na/K Pump (3:2)
-                    </button>
-                    <button class="tool-btn col-span-2 p-2 rounded-lg text-left flex items-center gap-3 transition-all text-sm" data-tool="sglt">
-                        <div class="flex -space-x-1">
-                            <div class="w-3 h-3 rounded-full bg-yellow-400 border border-slate-900"></div>
-                            <div class="w-3 h-3 rounded-full bg-white border border-slate-900"></div>
-                        </div> 
-                        Na/Glucose Symport
+                    <button id="deleteChannelBtn"
+                        class="w-full bg-red-900/30 hover:bg-red-900/50 text-red-200 p-2 rounded-lg flex items-center justify-center gap-2 transition-all text-sm hidden">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 6h18"></path>
+                            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                        </svg>
+                        Delete Selected
                     </button>
                 </div>
             </div>
@@ -127,24 +180,56 @@
                     <input type="range" id="freqRange" min="5" max="150" step="5" value="80" class="w-full">
                 </div>
                 <div>
-                    <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">Simulation Speed</h2>
+                    <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">Simulation Speed
+                    </h2>
                     <input type="range" id="speedRange" min="0.1" max="5.0" step="0.1" value="1.0" class="w-full">
                 </div>
                 <div>
-                    <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">Travel Distance (Span)</h2>
+                    <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">Travel Distance
+                        (Span)</h2>
                     <input type="range" id="spanRange" min="100" max="1000" step="10" value="450" class="w-full">
-                </div>
-                <div>
-                    <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">Channel Gap Width</h2>
-                    <input type="range" id="widthRange" min="10" max="250" step="2" value="80" class="w-full">
                 </div>
                 <div>
                     <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">Particle Size</h2>
                     <input type="range" id="sizeRange" min="8" max="24" step="1" value="12" class="w-full">
                 </div>
-                <button class="tool-btn w-full p-2 rounded-lg text-left flex items-center justify-center gap-3 transition-all text-sm border border-dashed border-slate-600" data-tool="eraser">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"></path><path d="m22 21-5-5"></path><path d="m5 11 9 9"></path></svg> Eraser
+                <button
+                    class="tool-btn w-full p-2 rounded-lg text-left flex items-center justify-center gap-3 transition-all text-sm border border-dashed border-slate-600"
+                    data-tool="eraser">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21">
+                        </path>
+                        <path d="m22 21-5-5"></path>
+                        <path d="m5 11 9 9"></path>
+                    </svg> Eraser
                 </button>
+            </div>
+
+            <div id="customConfigPanel" class="space-y-4 border-t border-slate-700 pt-6">
+                <h2
+                    class="text-xs font-semibold text-blue-400 uppercase tracking-widest flex justify-between items-center">
+                    Builder Config
+                    <button id="addCustomRow"
+                        class="bg-blue-600 hover:bg-blue-500 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs">+</button>
+                </h2>
+                <div>
+                    <input type="text" id="channelNameInput" placeholder="Channel Name"
+                        class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+                        disabled>
+                    <div class="mt-2 flex items-center gap-2">
+                        <input type="checkbox" id="channelATPInput"
+                            class="rounded bg-slate-800 border-slate-700 text-blue-500 focus:ring-0 w-4 h-4" disabled>
+                        <label for="channelATPInput" class="text-xs text-slate-400">ATP Powered</label>
+                    </div>
+                </div>
+                <div id="customRows" class="space-y-2">
+                    <!-- Rows will be injected here -->
+                </div>
+                <div class="bg-slate-800/50 p-2 rounded border border-slate-700">
+                    <p class="text-[10px] text-slate-400">Clicking on the membrane will place a channel with these
+                        settings.</p>
+                </div>
             </div>
         </aside>
 
@@ -154,7 +239,8 @@
                     <span class="text-blue-400 font-bold text-xl uppercase tracking-widest opacity-40">Lumen</span>
                 </div>
                 <div class="w-1/2 text-center">
-                    <span class="text-slate-100 font-bold text-xl uppercase tracking-widest opacity-40">Tubule Cell</span>
+                    <span class="text-slate-100 font-bold text-xl uppercase tracking-widest opacity-40">Tubule
+                        Cell</span>
                 </div>
                 <div class="w-1/4 text-center">
                     <span class="text-red-400 font-bold text-xl uppercase tracking-widest opacity-40">Blood</span>
@@ -164,7 +250,8 @@
         </main>
     </div>
 
-    <div id="toast" class="fixed bottom-6 right-6 bg-blue-600 text-white px-6 py-3 rounded-lg shadow-xl translate-y-20 opacity-0 transition-all duration-300">
+    <div id="toast"
+        class="fixed bottom-6 right-6 bg-blue-600 text-white px-6 py-3 rounded-lg shadow-xl translate-y-20 opacity-0 transition-all duration-300">
         Code copied!
     </div>
 
@@ -181,40 +268,162 @@
         const spanRange = document.getElementById('spanRange');
         const copyCodeBtn = document.getElementById('copyCodeBtn');
         const toast = document.getElementById('toast');
+        const customConfigPanel = document.getElementById('customConfigPanel');
+        const customRows = document.getElementById('customRows');
+        const addCustomRow = document.getElementById('addCustomRow');
+        const addChannelBtn = document.getElementById('addChannelBtn');
+        const deleteChannelBtn = document.getElementById('deleteChannelBtn');
+        const channelNameInput = document.getElementById('channelNameInput');
+        const channelATPInput = document.getElementById('channelATPInput');
 
         let width, height;
         let isDrawing = false;
-        let currentTool = 'sodium';
         let designMode = false;
         let channels = [];
         let particles = [];
+
+        // State
+        let selectedChannelId = null;
+        let creationName = '';
+        let creationATP = false;
+
+        // Default config for NEW channels
+        let creationConfig = [
+            { type: 'sodium', count: 3, m: 1 }
+        ];
 
         const DATA = {
             sodium: { color: '#facc15', label: 'Na+', textColor: '#422006' },
             potassium: { color: '#f87171', label: 'K+', textColor: '#450a0a' },
             chloride: { color: '#4ade80', label: 'Cl-', textColor: '#064e3b' },
             water: { color: '#60a5fa', label: 'H2O', textColor: '#1e3a8a' },
-            glucose: { color: '#ffffff', label: 'G', textColor: '#0f172a' }
+            glucose: { color: '#ffffff', label: 'G', textColor: '#0f172a' },
+            // New Particles
+            bicarbonate: { color: '#2dd4bf', label: 'HCO₃⁻', textColor: '#134e4a' }, // Teal
+            magnesium: { color: '#c084fc', label: 'Mg²⁺', textColor: '#581c87' }, // Purple
+            calcium: { color: '#fb923c', label: 'Ca²⁺', textColor: '#7c2d12' }, // Orange
+            phosphate: { color: '#818cf8', label: 'PO₄³⁻', textColor: '#312e81' } // Indigo
         };
 
-        const CHANNEL_CONFIG = {
-            sodium: { groupA: {type: 'sodium', count: 1, gap: 1, y: 0, m: 1}, label: 'Na+' },
-            potassium: { groupA: {type: 'potassium', count: 1, gap: 1, y: 0, m: 1}, label: 'K+' },
-            chloride: { groupA: {type: 'chloride', count: 1, gap: 1, y: 0, m: 1}, label: 'Cl-' },
-            water: { groupA: {type: 'water', count: 1, gap: 1, y: 0, m: 1}, label: 'H2O' },
-            na_k_pump: { 
-                groupA: {type: 'sodium', count: 3, gap: 2, y: -0.3, m: 1}, 
-                groupB: {type: 'potassium', count: 2, gap: 2, y: 0.3, m: -1},
-                label: 'Na/K Pump' 
-            },
-            sglt: {
-                groupA: {type: 'sodium', count: 2, gap: 2, y: -0.25, m: 1}, 
-                groupB: {type: 'glucose', count: 1, gap: 2, y: 0.25, m: 1},
-                label: 'SGLT'
+        function renderCustomRows() {
+            customRows.innerHTML = '';
+            let targetConfig;
+
+            if (selectedChannelId) {
+                const ch = channels.find(c => c.id === selectedChannelId);
+                targetConfig = ch.config;
+                channelNameInput.value = ch.name || '';
+                channelNameInput.disabled = false;
+                channelATPInput.checked = !!ch.atp; // Sync ATP
+                channelATPInput.disabled = false;
+            } else {
+                targetConfig = creationConfig;
+                channelNameInput.value = creationName;
+                channelNameInput.disabled = false;
+                channelATPInput.checked = creationATP; // Sync ATP
+                channelATPInput.disabled = false;
             }
-        };
 
-        const MEMBRANE_L = 0.25; 
+            targetConfig.forEach((item, index) => {
+                const row = document.createElement('div');
+                row.className = 'flex gap-2 items-center bg-slate-800 p-2 rounded relative group';
+
+                let options = '';
+                Object.keys(DATA).forEach(type => {
+                    options += `<option value="${type}" ${item.type === type ? 'selected' : ''}>${DATA[type].label}</option>`;
+                });
+
+                row.innerHTML = `
+                    <select class="bg-slate-900 text-[10px] rounded p-1 flex-1 border border-slate-700 update-custom" data-index="${index}" data-prop="type">
+                        ${options}
+                    </select>
+                    <input type="number" value="${item.count}" min="1" max="10" class="w-10 bg-slate-900 text-[10px] rounded p-1 border border-slate-700 update-custom" data-index="${index}" data-prop="count">
+                    <button class="w-6 h-6 bg-slate-700 rounded text-[10px] update-custom-dir" data-index="${index}">${item.m === 1 ? '→' : '←'}</button>
+                    <button class="text-red-400 opacity-0 group-hover:opacity-100 transition-all remove-custom" data-index="${index}">&times;</button>
+                `;
+                customRows.appendChild(row);
+            });
+        }
+
+        channelNameInput.addEventListener('input', (e) => {
+            if (selectedChannelId) {
+                const ch = channels.find(c => c.id === selectedChannelId);
+                if (ch) ch.name = e.target.value;
+            } else {
+                creationName = e.target.value;
+            }
+        });
+
+        // Listener for ATP
+        channelATPInput.addEventListener('change', (e) => {
+            if (selectedChannelId) {
+                const ch = channels.find(c => c.id === selectedChannelId);
+                if (ch) ch.atp = e.target.checked;
+            } else {
+                creationATP = e.target.checked;
+            }
+        });
+
+        customRows.addEventListener('click', (e) => {
+            const index = e.target.dataset.index;
+            // Determine which config we are editing: selected or creation
+            let targetConfig = selectedChannelId ? channels.find(c => c.id === selectedChannelId).config : creationConfig;
+
+            if (e.target.classList.contains('remove-custom')) {
+                // Prevent removing the last item ? Maybe allow empty?
+                targetConfig.splice(index, 1);
+                renderCustomRows();
+            } else if (e.target.classList.contains('update-custom-dir')) {
+                targetConfig[index].m *= -1;
+                renderCustomRows();
+            }
+        });
+
+        customRows.addEventListener('change', (e) => {
+            if (e.target.classList.contains('update-custom')) {
+                const { index, prop } = e.target.dataset;
+                let val = e.target.value;
+                if (prop === 'count') val = parseInt(val);
+
+                let targetConfig = selectedChannelId ? channels.find(c => c.id === selectedChannelId).config : creationConfig;
+                targetConfig[index][prop] = val;
+            }
+        });
+
+        addCustomRow.addEventListener('click', () => {
+            let targetConfig = selectedChannelId ? channels.find(c => c.id === selectedChannelId).config : creationConfig;
+            targetConfig.push({ type: 'sodium', count: 1, m: 1 });
+            renderCustomRows();
+        });
+
+        // New Button Handlers
+        addChannelBtn.addEventListener('click', () => {
+            selectedChannelId = null;
+            deleteChannelBtn.classList.add('hidden');
+            creationConfig = [{ type: 'sodium', count: 3, m: 1 }]; // Reset creation defaults
+            creationName = '';
+            creationATP = false; // Reset ATP
+            renderCustomRows();
+        });
+
+        deleteChannelBtn.addEventListener('click', () => {
+            if (selectedChannelId) {
+                channels = channels.filter(c => c.id !== selectedChannelId);
+                // Clear particles for this channel too
+                particles = particles.filter(p => p.channelId !== selectedChannelId);
+                selectedChannelId = null;
+                deleteChannelBtn.classList.add('hidden');
+                // Reset to default creation
+                creationConfig = [{ type: 'sodium', count: 3, m: 1 }];
+                creationName = '';
+                creationATP = false; // Reset ATP
+                renderCustomRows();
+            }
+        });
+
+        renderCustomRows();
+
+        const MEMBRANE_L = 0.25;
         const MEMBRANE_R = 0.75;
 
         function resize() {
@@ -223,36 +432,42 @@
         }
 
         class FluxParticle {
-            constructor(channel, type, direction, yOffsetScale, progressOffset, sharedSpeed, span) {
+            constructor(channel, type, direction, rowIndex, totalRows, progressOffset, sharedSpeed, span) {
                 this.type = type;
                 this.parentX = channel.x;
                 this.channelId = channel.id;
-                this.yOffsetScale = yOffsetScale; 
-                this.dir = direction; 
-                this.progress = progressOffset; 
+                this.rowIndex = rowIndex;
+                this.totalRows = totalRows;
+                this.dir = direction;
+                this.progress = progressOffset;
                 this.speed = sharedSpeed;
-                this.span = span; // Fixed span at creation for smooth movement
+                this.span = span;
             }
 
             update() {
                 this.progress += this.speed;
-                return this.progress >= 1; 
+                return this.progress >= 1;
             }
 
             draw() {
-                if (this.progress < 0) return; 
-                
+                if (this.progress < 0) return;
+
                 const channel = channels.find(c => c.id === this.channelId);
                 if (!channel) return;
 
                 const info = DATA[this.type];
                 const radius = parseInt(sizeRange.value);
-                const gap = parseInt(widthRange.value);
-                const currentY = channel.y + (this.yOffsetScale * gap);
-                
+
+                // Dynamic Row Layout
+                const ROW_HEIGHT = 20;
+                // Center the rows around channel.y
+                const totalHeight = this.totalRows * ROW_HEIGHT;
+                const startY = channel.y - (totalHeight / 2) + (ROW_HEIGHT / 2);
+                const currentY = startY + (this.rowIndex * ROW_HEIGHT);
+
                 const startX = this.parentX - (this.dir * this.span / 2);
                 const currentX = startX + (this.dir * this.span * this.progress);
-                
+
                 let alpha = 1;
                 if (this.progress < 0.1) alpha = this.progress / 0.1;
                 else if (this.progress > 0.9) alpha = (1 - this.progress) / 0.1;
@@ -277,7 +492,7 @@
             ctx.fillStyle = '#1e3a8a08';
             ctx.fillRect(0, 0, width * MEMBRANE_L, height);
             ctx.fillStyle = '#7f1d1d08';
-            ctx.fillRect(width * MEMBRANE_R, 0, width * (1-MEMBRANE_R), height);
+            ctx.fillRect(width * MEMBRANE_R, 0, width * (1 - MEMBRANE_R), height);
 
             ctx.strokeStyle = '#334155';
             ctx.lineWidth = 1.5;
@@ -290,72 +505,144 @@
 
         function drawChannels() {
             const time = Date.now() * 0.005;
-            const gap = parseInt(widthRange.value);
+            // Width range no longer controls vertical gap, but maybe width of box?
+            const boxWidth = 90;
             const radius = parseInt(sizeRange.value);
             const span = parseInt(spanRange.value);
-            
+
             const baseSimSpeed = 0.0018 * parseFloat(speedRange.value);
             const fluxDensity = parseInt(freqRange.value);
-
-            // diameter in progress units. recalculated dynamically based on span.
             const pBuffer = (2.25 * radius) / span;
 
             channels.forEach(ch => {
                 const cx = ch.x;
                 const cy = ch.y;
-                const config = CHANNEL_CONFIG[ch.type];
-                
-                if (designMode) {
-                    ctx.strokeStyle = '#ef4444';
-                    ctx.setLineDash([2, 2]);
-                    ctx.strokeRect(cx - 55, cy - (gap/2 + 25), 110, gap + 50);
+                const groups = ch.config; // Array of rows
+                const totalRows = groups.length;
+                const ROW_HEIGHT = 35; // Increased spacing here too
+                const channelHeight = Math.max(40, totalRows * ROW_HEIGHT + 20); // Min height + padding
+
+                // Selection Highlight
+                if (ch.id === selectedChannelId) {
+                    ctx.strokeStyle = '#38bdf8'; // Blue-400
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([4, 4]);
+                    ctx.strokeRect(cx - boxWidth / 2 - 5, cy - channelHeight / 2 - 5, boxWidth + 10, channelHeight + 10);
                     ctx.setLineDash([]);
-                    ctx.fillStyle = '#ef4444';
-                    const arrowX = cx + (Math.sin(time * 0.5) * 5) + (ch.direction * 75);
-                    ctx.beginPath();
-                    ctx.moveTo(arrowX, cy);
-                    ctx.lineTo(arrowX - (ch.direction * 10), cy - 6);
-                    ctx.lineTo(arrowX - (ch.direction * 10), cy + 6);
-                    ctx.fill();
+                }
+
+                // Draw ATP Icon
+                if (ch.atp) {
+                    ctx.save();
+
+                    // 1. Move to channel center
+                    ctx.translate(cx, cy);
+
+                    // 2. Rotate (with wiggle)
+                    // ADJUST WIGGLE HERE:
+                    const wiggleSpeed = 0.5;       // Lower = Slower wiggle
+                    const wiggleAmp = 0.025;      // Lower = Smaller wiggle
+                    const wiggle = Math.sin(time * wiggleSpeed) * wiggleAmp;
+                    ctx.rotate((Math.PI / 4) + wiggle);
+
+                    // 3. Move "away" (diagonal relative to screen, "up" relative to rotated context)
+                    const dist = channelHeight / 2 + 80;
+                    ctx.translate(0, -dist);
+
+                    // 4. Scale and Center Icon
+                    const scale = 0.5;
+                    ctx.scale(scale, scale);
+                    // Icon is ~90x90, so center it by moving -45,-45
+                    ctx.translate(-45, -45);
+
+                    // 5. Draw Path
+                    // Using backticks for safety
+                    const pathString = `M 71.79 34.614 c -0.334 -0.497 -0.926 -0.745 -1.513 -0.63 l -18.311 3.528 l 3.718 -35.877 c 0.071 -0.682 -0.332 -1.32 -0.979 -1.55 c -0.648 -0.229 -1.362 0.011 -1.738 0.585 L 18.202 53.746 c -0.328 0.5 -0.325 1.144 0.008 1.639 c 0.33 0.493 0.922 0.742 1.513 0.632 l 18.312 -3.529 l -3.718 35.876 c -0.071 0.684 0.332 1.322 0.979 1.551 C 35.455 89.971 35.622 90 35.792 90 c 0.502 0 0.965 -0.251 1.241 -0.67 l 34.765 -53.076 C 72.126 35.754 72.122 35.11 71.79 34.614 z`;
+                    const path = new Path2D(pathString);
+
+                    // Neon Stylings
+                    ctx.shadowColor = '#f59e0b';
+                    ctx.shadowBlur = 10;
+                    ctx.strokeStyle = '#fbbf24';
+                    ctx.lineWidth = 3;
+                    ctx.lineJoin = 'round';
+                    ctx.fillStyle = 'rgba(0,0,0,0)';
+                    ctx.stroke(path);
+
+                    // 6. Draw Text 
+                    // Relative to the scaled/translated context of the icon
+                    // We need to un-apply shadow for text
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = 'bold 24px Inter';
+                    ctx.textAlign = 'center';
+                    // Position: To the right of the icon. 
+                    // Icon is 0..90. Center is 45,45. 
+                    // Let's put text at 100, 45 (approx 55px right of center)
+                    ctx.fillText('ATP', 100, 45);
+
+                    ctx.restore();
+                }
+
+                // Draw Channel Name
+                if (ch.name) {
+                    ctx.save();
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = 'bold 16px Inter';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'bottom';
+                    // Position above the top bar
+                    ctx.fillText(ch.name.toUpperCase(), cx, cy - channelHeight / 2 - 12);
+                    ctx.restore();
                 }
 
                 ctx.fillStyle = '#475569';
                 ctx.strokeStyle = '#ffffff33';
                 ctx.lineWidth = 1;
                 const barWidth = 90;
-                const barHeight = 8; 
+                const barHeight = 8;
+
+                // Draw Channel Bars (Top and Bottom)
+                ctx.beginPath();
+                ctx.roundRect(cx - barWidth / 2, cy - channelHeight / 2 - barHeight, barWidth, barHeight, 4);
+                ctx.fill(); ctx.stroke();
 
                 ctx.beginPath();
-                ctx.roundRect(cx - barWidth/2, cy - gap/2 - barHeight, barWidth, barHeight, 4);
-                ctx.fill(); ctx.stroke();
-                ctx.beginPath();
-                ctx.roundRect(cx - barWidth/2, cy + gap/2, barWidth, barHeight, 4);
+                ctx.roundRect(cx - barWidth / 2, cy + channelHeight / 2, barWidth, barHeight, 4);
                 ctx.fill(); ctx.stroke();
 
                 if (!ch.lastSpawnTime) ch.lastSpawnTime = 0;
-                
+
+                // Spawn Logic
                 const msPerPulse = (18000 / fluxDensity) / (parseFloat(speedRange.value) * 0.5);
 
                 if (Date.now() > ch.lastSpawnTime + msPerPulse) {
-                    ch.lastSpawnTime = Date.now();
-                    
-                    const spawnGroup = (group) => {
-                        if (!group) return;
-                        for (let i = 0; i < group.count; i++) {
-                            particles.push(new FluxParticle(
-                                ch, 
-                                group.type, 
-                                ch.direction * group.m, 
-                                group.y, 
-                                -(i * pBuffer),
-                                baseSimSpeed,
-                                span
-                            ));
+                    let canSpawnAll = true;
+                    // Check overlap
+                    groups.forEach((group, rowIndex) => {
+                        const lastParticle = particles.filter(p => p.channelId === ch.id && p.rowIndex === rowIndex).slice(-1)[0];
+                        if (lastParticle && lastParticle.progress < pBuffer * group.count) {
+                            canSpawnAll = false;
                         }
-                    };
+                    });
 
-                    spawnGroup(config.groupA);
-                    spawnGroup(config.groupB);
+                    if (canSpawnAll) {
+                        ch.lastSpawnTime = Date.now();
+                        groups.forEach((group, rowIndex) => {
+                            for (let i = 0; i < group.count; i++) {
+                                particles.push(new FluxParticle(
+                                    ch,
+                                    group.type,
+                                    ch.direction * group.m, // Global dir * local dir
+                                    rowIndex,
+                                    totalRows,
+                                    -(i * pBuffer),
+                                    baseSimSpeed,
+                                    span
+                                ));
+                            }
+                        });
+                    }
                 }
             });
         }
@@ -374,15 +661,21 @@
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
 
-            if (designMode) {
-                const gap = parseInt(widthRange.value);
-                const clickedIdx = channels.findIndex(ch => Math.abs(ch.x - x) < 55 && Math.abs(ch.y - y) < (gap/2 + 35));
-                if (clickedIdx !== -1) {
-                    channels[clickedIdx].direction *= -1;
-                    return;
-                }
+            // 1. Check if clicking an EXISTING channel (Selection)
+            // Use a generous hit area
+            const clickedIdx = channels.findIndex(ch => {
+                const height = 40 + (ch.config.length * 20); // Approx height logic
+                return Math.abs(ch.x - x) < 60 && Math.abs(ch.y - y) < (height / 2 + 10);
+            });
+
+            if (clickedIdx !== -1) {
+                selectedChannelId = channels[clickedIdx].id;
+                deleteChannelBtn.classList.remove('hidden');
+                renderCustomRows();
+                return;
             }
 
+            // 2. If not selecting, try to PLACE a new channel
             const mLAbs = width * MEMBRANE_L;
             const mRAbs = width * MEMBRANE_R;
             let targetX = null;
@@ -390,33 +683,96 @@
             else if (Math.abs(x - mRAbs) < 100) targetX = mRAbs;
 
             if (targetX !== null) {
-                if (currentTool === 'eraser') {
-                    channels = channels.filter(ch => !(Math.abs(ch.x - targetX) < 50 && Math.abs(ch.y - y) < 80));
-                } else if(CHANNEL_CONFIG[currentTool]) {
-                    if (!channels.some(ch => Math.abs(ch.x - targetX) < 10 && Math.abs(ch.y - y) < 120)) {
-                        channels.push({ 
-                            id: Date.now(), 
-                            x: targetX, 
-                            y, 
-                            type: currentTool, 
-                            direction: 1, 
-                            lastSpawnTime: 0 
-                        });
-                    }
+                // Ensure no overlap with other channels (simple check)
+                if (!channels.some(ch => Math.abs(ch.x - targetX) < 10 && Math.abs(ch.y - y) < 100)) {
+                    const newId = Date.now();
+                    channels.push({
+                        id: newId,
+                        x: targetX,
+                        y,
+                        // Deep copy creation config
+                        config: JSON.parse(JSON.stringify(creationConfig)),
+                        name: creationName, // Save name
+                        atp: creationATP, // Save ATP state
+                        direction: 1,
+                        lastSpawnTime: 0
+                    });
+
+                    // Auto-select the new channel
+                    selectedChannelId = newId;
+                    deleteChannelBtn.classList.remove('hidden');
+                    renderCustomRows();
                 }
             }
         });
 
-        toolBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                toolBtns.forEach(b => b.classList.remove('active-tool'));
-                btn.classList.add('active-tool');
-                currentTool = btn.dataset.tool;
-            });
+        // Save/Load Handlers
+        const saveBtn = document.getElementById('saveBtn');
+        const loadBtn = document.getElementById('loadBtn');
+
+        saveBtn.addEventListener('click', () => {
+            const data = {
+                channels: channels, // Configs are inside
+                settings: {
+                    freq: freqRange.value,
+                    speed: speedRange.value,
+                    size: sizeRange.value,
+                    span: spanRange.value
+                }
+            };
+            localStorage.setItem('nephron_save', JSON.stringify(data));
+
+            // Simple toast feedback
+            toast.textContent = 'Layout Saved!';
+            toast.className = 'fixed top-20 right-4 bg-green-500 text-white px-4 py-2 rounded shadow-lg transition-opacity duration-500 opacity-100';
+            setTimeout(() => { toast.classList.replace('opacity-100', 'opacity-0'); }, 2000);
         });
 
-        designToggle.addEventListener('change', (e) => designMode = e.target.checked);
-        clearBtn.addEventListener('click', () => { channels = []; particles = []; });
+        loadBtn.addEventListener('click', () => {
+            const raw = localStorage.getItem('nephron_save');
+            if (raw) {
+                try {
+                    const data = JSON.parse(raw);
+                    // Restore Channels
+                    channels = data.channels || [];
+                    particles = []; // Clear current Particles
+
+                    // Restore Settings
+                    if (data.settings) {
+                        freqRange.value = data.settings.freq || 50;
+                        speedRange.value = data.settings.speed || 1;
+                        sizeRange.value = data.settings.size || 8;
+                        spanRange.value = data.settings.span || 100;
+                    }
+
+                    selectedChannelId = null;
+                    deleteChannelBtn.classList.add('hidden');
+                    renderCustomRows();
+
+                    toast.textContent = 'Layout Loaded!';
+                    toast.className = 'fixed top-20 right-4 bg-blue-500 text-white px-4 py-2 rounded shadow-lg transition-opacity duration-500 opacity-100';
+                    setTimeout(() => { toast.classList.replace('opacity-100', 'opacity-0'); }, 2000);
+
+                } catch (e) {
+                    console.error(e);
+                    alert('Failed to load save data.');
+                }
+            } else {
+                alert('No saved layout found.');
+            }
+        });
+
+        // clearBtn.addEventListener('click', () => { channels = []; particles = []; }); // Kept in header?
+        // Reuse clear logic if needed or from header
+
+        clearBtn.addEventListener('click', () => {
+            channels = [];
+            particles = [];
+            selectedChannelId = null;
+            deleteChannelBtn.classList.add('hidden');
+            creationConfig = [{ type: 'sodium', count: 3, m: 1 }];
+            renderCustomRows();
+        });
 
         copyCodeBtn.addEventListener('click', () => {
             const code = document.documentElement.outerHTML;
@@ -435,4 +791,5 @@
         animate();
     </script>
 </body>
+
 </html>
